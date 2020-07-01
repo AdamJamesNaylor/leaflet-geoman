@@ -65,8 +65,15 @@ const Map = L.Class.extend({
 
     this.Draw.disable(shape);
   },
-  setPathOptions(options) {
-    this.Draw.setPathOptions(options);
+  // optionsModifier for spezial options like ignoreShapes
+  setPathOptions(options, optionsModifier = {}) {
+    const ignore = optionsModifier.ignoreShapes || [];
+
+    this.map.pm.Draw.shapes.forEach(shape => {
+      if (ignore.indexOf(shape) === -1) {
+        this.map.pm.Draw[shape].setPathOptions(options)
+      }
+    })
   },
 
   getGlobalOptions() {
@@ -104,21 +111,22 @@ const Map = L.Class.extend({
       }
     });
   },
-  globalDrawModeEnabled(){
+  globalDrawModeEnabled() {
     return !!this.Draw.getActiveShape();
   },
-  globalCutModeEnabled(){
+  globalCutModeEnabled() {
     return !!this.Draw.Cut.enabled();
   },
-  enableGlobalCutMode(options){
+  enableGlobalCutMode(options) {
     return this.Draw.Cut.enable(options);
   },
-  toggleGlobalCutMode(options){
+  toggleGlobalCutMode(options) {
     return this.Draw.Cut.toggle(options);
   },
-  disableGlobalCutMode(){
+  disableGlobalCutMode() {
     return this.Draw.Cut.disable();
   }
+
 });
 
 export default Map;

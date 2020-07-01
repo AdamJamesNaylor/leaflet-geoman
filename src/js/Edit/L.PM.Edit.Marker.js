@@ -20,10 +20,11 @@ Edit.Marker = Edit.extend({
       this._disableSnapping();
     }
 
-    if (this.options.draggable && this._layer.dragging) {
-      this._layer.dragging.enable();
+    if (this.options.draggable) {
+      this.enableLayerDrag();
+    } else {
+      this.disableLayerDrag();
     }
-
     // enable removal for the marker
     if (!this.options.preventMarkerRemoval) {
       this._layer.on('contextmenu', this._removeMarker, this);
@@ -48,7 +49,7 @@ Edit.Marker = Edit.extend({
     }
     this._enabled = true;
 
-    this._layer.fire('pm:enable', {layer: this._layer});
+    this._layer.fire('pm:enable', { layer: this._layer });
 
     this.applyOptions();
   },
@@ -60,19 +61,15 @@ Edit.Marker = Edit.extend({
   disable() {
     this._enabled = false;
 
-    // disable dragging and removal for the marker
-    if (this._layer.dragging) {
-      this._layer.dragging.disable();
-    }
+    // disable dragging, as this could have been active even without being enabled
+    this.disableLayerDrag();
 
     this._layer.off('contextmenu', this._removeMarker, this);
 
-    this._layer.off('dragstart', this._onPinnedMarkerDragStart, this);
-
-    this._layer.fire('pm:disable', {layer: this._layer});
+    this._layer.fire('pm:disable', { layer: this._layer });
 
     if (this._layerEdited) {
-      this._layer.fire('pm:update', {layer: this._layer});
+      this._layer.fire('pm:update', { layer: this._layer });
     }
     this._layerEdited = false;
   },
@@ -80,14 +77,14 @@ Edit.Marker = Edit.extend({
     const marker = e.target;
     marker.remove();
     // TODO: find out why this is fired manually, shouldn't it be catched by L.PM.Map 'layerremove'?
-    marker.fire('pm:remove',{layer: marker});
+    marker.fire('pm:remove', { layer: marker });
     this._map.fire('pm:remove', { layer: marker });
   },
   _onDragEnd(e) {
     const marker = e.target;
 
     // fire the pm:edit event and pass shape and marker
-    marker.fire('pm:edit', {layer: this._layer});
+    marker.fire('pm:edit', { layer: this._layer });
     this._layerEdited = true;
   },
   // overwrite initSnappableMarkers from Snapping.js Mixin

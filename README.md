@@ -33,10 +33,11 @@
 
 ![Demo](https://file-gmeileqfmg.now.sh/)
 
+### Using Leaflet-Geoman in production?
+[Please consider sponsoring its development](https://github.com/sponsors/codeofsumit)
+
 #### Leaflet-Geoman Pro ⭐
-Companies need more advanced features, reliability and support. In our Pro version, we offer everything from the open source version and add many advanced features for big scale projects.
-Features marked with ⭐ in this documentation are only available in the Pro version.
-[Purchase Pro](https://geoman.io/leaflet-geoman#pro) or [contact me](mailto:sumit@geoman.io)
+Features marked with ⭐ in this documentation are available in Leaflet-Geoman Pro. [Purchase Pro](https://geoman.io/leaflet-geoman#pro) or [get in touch](mailto:sumit@geoman.io)
 
 ## Documentation
 
@@ -219,6 +220,8 @@ See the available options in the table below.
 | cursorMarker          | `true`                                | show a marker at the cursor                                                                                                                           |
 | finishOn              | `null`                                | leaflet layer event to finish the drawn shape, like `'dblclick'`. [Here's a list](http://leafletjs.com/reference-1.2.0.html#interactive-layer-click). |
 | markerStyle           | `{ draggable: true }`                 | [leaflet marker options](https://leafletjs.com/reference-1.4.0.html#marker-icon) (only for drawing markers).                                          |
+| editable              | `false`                               | makes a `CircleMarker` editable like a `Circle`                                                                                                       |
+| hideMiddleMarkers   | `false`                               | hide the middle Markers in edit mode from Polyline and Polygon.                                                                                     |
 
 You can listen to map events to hook into the drawing procedure like this:
 
@@ -286,6 +289,7 @@ See the available options in the table below.
 | snapDistance          | `20`    | The distance to another vertex when a snap should happen.                                                 |
 | pinning               | `false` | Pin shared vertices/markers together during edit ⭐. [Details](#pinning)                                   |
 | allowSelfIntersection | `true`  | Allow/Disallow self-intersections on polygons and polylines.                                              |
+| allowSelfIntersectionEdit | `false`  | Allow/Disallow to change vertices they are connected to a intersecting line. Only working if allowSelfIntersection is `true` and the layer is already self-intersecting while enabling edit mode.                                         |
 | preventMarkerRemoval  | `false` | Disable the removal of markers/vertexes via right click.                                                  |
 | limitMarkersToCount   | `-1`    | Shows only `n` markers closest to the cursor. Use `-1` for no limit                                       |
 | limitMarkersToZoom    | `-1`    | Shows markers when under the given zoom level ⭐                                                           |
@@ -513,6 +517,7 @@ The following options are available globally and apply when going into global ed
 | limitMarkersToZoom        | `-1`    | Shows markers when under the given zoom level ⭐                                                           |
 | limitMarkersToViewport    | `false` | Shows only markers in the viewport ⭐                                                                      |
 | limitMarkersToClick       | `false` | Shows markers only after the layer was clicked ⭐                                                          |
+| editable                  | `false` | Makes a `CircleMarker` editable like a `Circle`                                                           |
 
 
 Some details about a few more powerful options:
@@ -542,7 +547,7 @@ Change the language of user-facing copy in leaflet-geoman
 map.pm.setLang('de');
 ```
 
-Currently available languages are `en`, `de`, `it`, `ru`, `ro`, `es`, `fr`, `pt_br`, `id`, `zh`, `nl`, `pl` and `sv`.
+Currently available languages are `en`, `de`, `it`, `ru`, `ro`, `es`, `fr`, `pt_br`, `id`, `zh`, `nl`, `el`, `pl` and `sv`.
 To add translations to the plugin, you can add [a translation file](src/assets/translations) via Pull Request.
 
 You can also provide your own custom translations.
@@ -575,7 +580,7 @@ In order to change the style of the lines during draw, pass these options to the
 
 ```js
 // optional options for line style during draw. These are the defaults
-var options = {
+const options = {
   // the lines between coordinates/markers
   templineStyle: {
     color: 'red',
@@ -597,7 +602,7 @@ pass the options to `enableDraw`:
 
 ```js
 // optional options for line style during draw. These are the defaults
-var options = {
+const options = {
   templineStyle: {},
   hintlineStyle: {},
   pathOptions: {
@@ -621,7 +626,123 @@ map.pm.setPathOptions({
 });
 ```
 
-### Feature Request
+If you want to exclude shapes from receiving these path options, use the second parameter like this:
+```javascript
+map.pm.setPathOptions({
+      color: 'orange',
+      fillColor: 'green',
+      fillOpacity: 0.4,
+    },
+    {
+      ignoreShapes: ['Circle', 'Rectangle']
+    }
+);
+```
+
+
+##### Customize Controls
+
+There are 4 control blocks in the Toolbar: `draw`, `edit`, `options` (⭐) and `custom`
+You can disable / enable entire blocks. To display the Toolbar as one block instead of 4, use `oneBlock: true`.
+
+```
+map.pm.addControls({
+     drawControls: true,
+     editControls: false,
+     optionsControls: true,
+     customControls: true,
+     oneBlock: false
+ })
+```
+
+Reorder the buttons with
+```js
+map.pm.Toolbar.changeControlOrder(['drawCircle', 'drawRectangle', 'removalMode', 'editMode'])
+```
+
+Receive the current order with
+```js
+map.pm.Toolbar.getControlOrder()
+```
+
+**Adding New/Custom Controls**
+
+```js
+// add a new custom control
+map.pm.Toolbar.createCustomControl(options)
+```
+
+| Option        | Default     | Description                                                                                      |
+| :------------ | :---------- | :----------------------------------------------------------------------------------------------- |
+| name          | Required    | Name of the control |
+| block         | ''          | block of the control. `draw`, `edit`, `options`⭐, `custom` |
+| title         | ''          | Text showing when you hover the control |
+| className     | ''          | CSS class with the Icon |
+| onClick       | -           | Function fired when clicking the control |
+| afterClick    | -           | Function fired after clicking the control |
+| actions       | [ ]          | Action that appears as tooltip. Look under [actions](#actions) for more information |
+| toggle        | true        | Control can be toggled |
+
+
+**Inherit from an Existing Control**
+
+This effectively copies an existing control that you can customize.
+
+```js
+// copy a rectangle and customize its name, block, title and actions
+map.pm.Toolbar.copyDrawControl('Rectangle', 
+  {
+    name:'RectangleCopy',
+    block: 'custom',
+    title: 'Display text on hover button',
+    actions: actions
+  }
+);
+```
+
+
+**Actions**
+
+You can add your own actions to existing or your custom buttons.
+
+Here, we configure 3 separate actions in an array.
+```js
+// creates new actions
+const actions = [
+  // uses the default 'cancel' action
+  'cancel',                   
+  
+  // creates a new action that has text, no click event
+  { text: 'Custom text, no click' },
+
+  // creates a new action with text and a click event
+  {
+    text: 'click me',
+     onClick: () => { alert('🙋‍♂️') }
+  }
+]
+```
+Default actions available are: `cancel`, `removeLastVertex`, `finish`, `finishMode`.
+
+
+Change actions of existing buttons:
+```js
+map.pm.Toolbar.changeActionsOfControl('Rectangle', actions)
+```
+
+Pass actions to your custom buttons through the `actions` property mentioned under [Inherit from an Existing Control](#inherit-from-an-existing-control)
+
+The following methods are available on `map.pm.Toolbar`:
+
+| Method                                      | Returns   | Description                                                                                                   |
+| :------------------------------------------ | :-------- | :------------------------------------------------------------------------------------------------------------ |
+| createCustomControl(`options`)              | -         | To add a custom Control to the Toolbar.                                                                       |
+| copyDrawControl(`instance`, `options`)       | `Object`  | Creates a copy of a draw Control. Returns the `drawInstance` and the `control`.                               |
+| changeActionsOfControl(`name`, `actions`)    | -         | Change the actions of an existing button.                                                                     |
+| changeControlOrder(`shapes`)                | -         | Change the order of the controls in the Toolbar. You can pass all shapes and `Edit`, `Drag`, `Removal`, `Cut` |
+| getControlOrder()                           | `Array`   | Get the current order of the controls.                                                                        |
+
+### Feature Requests
 
 I'm adopting the Issue Management of lodash which means, feature requests get the "Feature Request" Label and then get closed.
 You can upvote existing feature requests (or create new ones). Upvotes make me see how much a feature is requested and prioritize their implementation.

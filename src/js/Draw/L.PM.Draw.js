@@ -70,11 +70,11 @@ const Draw = L.Class.extend({
       this[shape].addButton();
     });
   },
-  getActiveShape(){
+  getActiveShape() {
     // returns the active shape
-    var enabledShape = undefined;
+    let enabledShape;
     this.shapes.forEach(shape => {
-      if(this[shape]._enabled){
+      if (this[shape]._enabled) {
         enabledShape = shape;
       }
     });
@@ -82,12 +82,12 @@ const Draw = L.Class.extend({
   },
   _setGlobalDrawMode() {
     // extended to all PM.Draw shapes
-    if(this._shape === "Cut"){
+    if (this._shape === "Cut") {
       this._map.fire('pm:globalcutmodetoggled', {
         enabled: !!this._enabled,
         map: this._map,
       });
-    }else {
+    } else {
       this._map.fire('pm:globaldrawmodetoggled', {
         enabled: this._enabled,
         shape: this._shape,
@@ -96,6 +96,51 @@ const Draw = L.Class.extend({
     }
   },
 
+  createNewDrawInstance(name, jsClass) {
+    const instance = this._getShapeFromBtnName(jsClass);
+    if (this[name]) {
+      throw new TypeError(
+        "Draw Type already exists"
+      );
+    }
+    if (!L.PM.Draw[instance]) {
+      throw new TypeError(
+        `There is no class L.PM.Draw.${instance}`
+      );
+    }
+
+    this[name] = new L.PM.Draw[instance](this._map);
+    this[name].toolbarButtonName = name;
+    this.shapes.push(name);
+
+    // needed when extended / copied from a custom instance
+    if (this[jsClass]) {
+      this[name].setOptions(this[jsClass].options);
+    }
+    // Re-init the options, so it is not referenced with the default Draw class
+    this[name].setOptions(this[name].options);
+
+    return this[name];
+  },
+  _getShapeFromBtnName(name) {
+    const shapeMapping = {
+      "drawMarker": "Marker",
+      "drawCircle": "Circle",
+      "drawPolygon": "Polygon",
+      "drawPolyline": "Line",
+      "drawRectangle": "Rectangle",
+      "drawCircleMarker": "CircleMarker",
+      "editMode": "Edit",
+      "dragMode": "Drag",
+      "cutPoylgon": "Cut",
+      "removalMode": "Removal"
+    };
+
+    if (shapeMapping[name]) {
+      return shapeMapping[name];
+    }
+    return this[name] ? this[name]._shape : name;
+  }
 });
 
 export default Draw;
