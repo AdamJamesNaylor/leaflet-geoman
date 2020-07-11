@@ -1,4 +1,4 @@
-import union from "@turf/union";
+import * as turf from "@turf/turf";
 
 const GlobalMergeMode = {
   disableGlobalMergeMode() {
@@ -78,16 +78,18 @@ const GlobalMergeMode = {
       return;
     } else {
       var firstLayer = this._firstUnionLayer;
-      var result = union(firstLayer.toGeoJSON(15), currentLayer.toGeoJSON(15));
-      if (result.geometry.type == 'MultiPolygon')
+      var result = turf.union(firstLayer.toGeoJSON(15), currentLayer.toGeoJSON(15));
+      if (result.geometry.type == 'MultiPolygon') {
         return; //input was non-contiguous
-      var newLayer = L.geoJson(result)
+      }
+      var newLayer = L.geoJson(result, this.map.pm.Draw.options.pathOptions)
         .addTo(this.map);
-
-      this.map.fire('pm:merge', { firstLayer: firstLayer, secondLayer: currentLayer, resultingLayer: newLayer });
 
       firstLayer.remove();
       currentLayer.remove();
+
+      this.map.fire('pm:merge', { firstLayer: firstLayer, secondLayer: currentLayer, layer: newLayer });
+
       this._firstUnionLayer = newLayer;
     }
   },
