@@ -1,0 +1,28 @@
+trigger:
+- develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    customCommand: 'run prepare'
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    customCommand: 'run test'
+
+- task: Npm@1
+  inputs:
+    command: 'publish'
+    publishRegistry: 'useFeed'
+    publishFeed: '25eef6ff-09b7-4e9d-a5b7-1122e04a4d07'
+
