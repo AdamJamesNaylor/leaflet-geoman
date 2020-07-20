@@ -304,7 +304,7 @@ describe('Testing the Toolbar', () => {
         oneBlock: true
       });
       cy.get('.leaflet-pm-toolbar.leaflet-pm-draw').then((container) => {
-        expect(container[0].children.length).to.equal(10);
+        expect(container[0].children.length).to.equal(11);
       })
     });
   });
