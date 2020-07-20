@@ -7,20 +7,24 @@ pool:
 steps:
 
 - task: Npm@1
+  displayName: Install packages
   inputs:
     command: 'install'
 
 - task: Npm@1
+  displayName: Build
   inputs:
     command: 'custom'
     customCommand: 'run prepare'
 
 - task: Npm@1
+  displayName: Test
   inputs:
     command: 'custom'
     customCommand: 'run test'
 
 - task: Npm@1
+  displayName: Publish
   inputs:
     command: 'publish'
     publishRegistry: 'useFeed'
