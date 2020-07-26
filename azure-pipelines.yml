@@ -28,5 +28,4 @@ steps:
   inputs:
     command: 'publish'
     publishRegistry: 'useFeed'
-    publishFeed: '25eef6ff-09b7-4e9d-a5b7-1122e04a4d07'
-
+    publishFeed: '623aae93-2e21-41ba-9f1c-07d5a77f7965'
